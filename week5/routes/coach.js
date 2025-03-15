@@ -10,11 +10,13 @@ router.get('/', async(req, res, next ) => {
     try{
         const { per, page } = req.query;
         if(!isValidString(per) || !isValidString(page)){
-            res.status(400).json({
-                status: 'failed',
-                message: '欄位未填寫正確'
-            })
+            next(appError(400, '欄位未填寫正確'))
             return
+            // res.status(400).json({
+            //     status: 'failed',
+            //     message: '欄位未填寫正確'
+            // })
+            // return
         }
 
     }catch(error){

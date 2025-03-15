@@ -4,6 +4,7 @@ const router = express.Router()
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('CreditPackage')
 const{isValidString, isNumber} = require('../utils/validUtils')
+const appError = require('../utils/appError')
 
 router.get('/', async (req, res, next) => {
     try {
@@ -28,6 +29,7 @@ router.get('/', async (req, res, next) => {
         // }))
         // res.end()
         next(error)
+        return
     }
 
 })
@@ -36,10 +38,11 @@ router.post('/', async (req, res, next) => {
     try {
         const {name, credit_amount, price } = req.body
         if (!isValidString(name) || !isNumber(credit_amount) || !isNumber(price)) {
-            res.status(400).json({
-                status: "failed",
-                message: "欄位未填寫正確"
-            })
+            next(appError(400, "欄位未填寫正確"))
+            // res.status(400).json({
+            //     status: "failed",
+            //     message: "欄位未填寫正確"
+            // })
         // res.writeHead(400, headers)
         // res.write(JSON.stringify({
         //     status: "failed",
@@ -57,10 +60,11 @@ router.post('/', async (req, res, next) => {
             }
         })
         if (existPackage.length > 0) {
-            res.status(409).json({
-                status: "failed",
-                message: "資料重複"
-            })
+            next(appError(409, "資料重複"))
+            // res.status(409).json({
+            //     status: "failed",
+            //     message: "資料重複"
+            // })
             return
         // res.writeHead(409, headers)
         // res.write(JSON.stringify({
@@ -102,10 +106,11 @@ router.delete('/:creditPackageId', async (req, res, next) => {
         const {creditPackageId} = req.params
 
         if(!isValidString(creditPackageId)){
-            res.status(400).json({
-                status: "failed",
-                message: "ID錯誤"
-            })
+            next(appError(400, "ID錯誤"))
+            // res.status(400).json({
+            //     status: "failed",
+            //     message: "ID錯誤"
+            // })
             return
         }
         // const {name, credit_amount, price } = req.body
@@ -119,10 +124,11 @@ router.delete('/:creditPackageId', async (req, res, next) => {
 
         const result = await dataSource.getRepository("CreditPackage").delete(creditPackageId)
         if (result.affected === 0) {
-            res.status(400).json({
-                status: "failed",
-                message: "ID錯誤"
-            })
+            next(appError(400, "ID錯誤"))
+            // res.status(400).json({
+            //     status: "failed",
+            //     message: "ID錯誤"
+            // })
             return
         }
         res.status(200).json({

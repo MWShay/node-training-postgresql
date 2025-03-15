@@ -33,13 +33,33 @@ app.use('/api/coaches/skill', skillRouter)
 app.use('/api/user', userRouter)
 app.use('/api/admin', adminRouter)
 
-// eslint-disable-next-line no-unused-vars
+//404 Handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    status: 'error',
+    message: '無此路由'
+  })
+  return
+})
+
+// // eslint-disable-next-line no-unused-vars
+// app.use((err, req, res, next) => {
+//   req.log.error(err)
+//   res.status(500).json({
+//     status: 'error',
+//     message: '伺服器錯誤'
+//   })
+// })
+
+
+// 放在所有路由之後，統一處理錯誤
 app.use((err, req, res, next) => {
   req.log.error(err)
-  res.status(500).json({
-    status: 'error',
-    message: '伺服器錯誤'
-  })
+  const statusCode = err.status || 500; // 400, 409, 500 ...
+  res.status(statusCode).json({
+    status: statusCode === 500 ? 'error' : 'failed',
+    message: err.message || '伺服器錯誤'
+  });
 })
 
 module.exports = app
