@@ -8,6 +8,7 @@ const creditPackageRouter = require('./routes/creditPackage')
 const skillRouter = require('./routes/Skill')
 const userRouter = require('./routes/user')
 const adminRouter = require('./routes/admin')
+const uploadRouter = require('./routes/upload')
 
 const app = express()
 app.use(cors())
@@ -32,6 +33,7 @@ app.use('/api/credit-package', creditPackageRouter)
 app.use('/api/coaches/skill', skillRouter)
 app.use('/api/user', userRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api/upload', uploadRouter)
 
 //404 Handler
 app.use((req, res, next) => {
