@@ -1,95 +1,60 @@
 const { dataSource } = require('../db/data-source')
+const appError = require('../utils/appError')
 const logger = require('../utils/logger')('SkillController')
+const { isValidString } = require('../utils/validUtils')
 
-function isUndefined (value) {
-  return value === undefined
-}
-
-function isNotValidSting (value) {
-  return typeof value !== 'string' || value.trim().length === 0 || value === ''
-}
-
-async function getAll (req, res, next) {
-  try {
-    const skills = await dataSource.getRepository('Skill').find({
-      select: ['id', 'name']
-    })
-    res.status(200).json({
-      status: 'success',
-      data: skills
-    })
-  } catch (error) {
-    logger.error(error)
-    next(error)
-  }
-}
-
-async function post (req, res, next) {
-  try {
-    const { name } = req.body
-    if (isUndefined(name) || isNotValidSting(name)) {
-      res.status(400).json({
-        status: 'failed',
-        message: '欄位未填寫正確'
+const skillController = {
+  async getSkills (req, res, next)  {
+    const data = await dataSource.getRepository("Skill").find({
+        select: ["id", "name"]
       })
-      return
+
+      res.status(200).json({
+          status: "success",
+          data: data
+      })
+  },
+
+  async postSkill (req, res, next)  {
+    const {name} = req.body
+    if (!isValidString(name)) {
+        
+        return next(appError(400, "欄位未填寫正確"))
     }
-    const skillRepo = dataSource.getRepository('Skill')
-    const existSkill = await skillRepo.findOne({
-      where: {
-        name
-      }
+
+    const skillRepo = await dataSource.getRepository("Skill")
+    const existSkill = await skillRepo.find({
+        where:{
+            name: name
+        }
     })
-    if (existSkill) {
-      res.status(409).json({
-        status: 'failed',
-        message: '資料重複'
-      })
-      return
+    if (existSkill.length > 0){
+        return next(appError(409, "資料重複"))
     }
     const newSkill = await skillRepo.create({
-      name
+        name
     })
     const result = await skillRepo.save(newSkill)
     res.status(200).json({
-      status: 'success',
-      data: result
+        status:"success",
+        data: result
     })
-  } catch (error) {
-    logger.error(error)
-    next(error)
-  }
-}
+  },
 
-async function deletePackage (req, res, next) {
-  try {
-    const { skillId } = req.params
-    if (isUndefined(skillId) || isNotValidSting(skillId)) {
-      res.status(400).json({
-        status: 'failed',
-        message: 'ID錯誤'
-      })
-      return
+  async deleteSkill (req, res, next)  {
+    const {skillId} = req.params
+
+    if(!isValidString(skillId)){
+        return next(appError(400, "ID錯誤"))
     }
-    const result = await dataSource.getRepository('Skill').delete(skillId)
-    if (result.affected === 0) {
-      res.status(400).json({
-        status: 'failed',
-        message: 'ID錯誤'
-      })
-      return
+    const result = await dataSource.getRepository("Skill").delete(skillId)
+    if (result.affected === 0){
+        return next(appError(400, "ID錯誤"))
     }
     res.status(200).json({
-      status: 'success'
-    })
-  } catch (error) {
-    logger.error(error)
-    next(error)
+        status:"success"
+    })    
   }
 }
 
-module.exports = {
-  getAll,
-  post,
-  deletePackage
-}
+module.exports = skillController

@@ -1,12 +1,18 @@
 const express = require('express')
 
 const router = express.Router()
-const skill = require('../controllers/skill')
+const { dataSource } = require('../db/data-source')
+const logger = require('../utils/logger')('Skill')
+const{isValidString, isNumber} = require('../utils/validUtils')
+const appError = require('../utils/appError')
+const handleErrorAsync = require('../utils/handleErrorAsync')
+const skillController = require('../controllers/Skill')
 
-router.get('/', skill.getAll)
 
-router.post('/', skill.post)
+router.get('/', handleErrorAsync(skillController.getSkills));
 
-router.delete('/:skillId', skill.deletePackage)
+router.post('/', handleErrorAsync(skillController.postSkill));
 
-module.exports = router
+router.delete('/:skillId', handleErrorAsync(skillController.deleteSkill));
+
+module.exports =router
